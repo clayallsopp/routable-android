@@ -21,7 +21,7 @@ public class Router {
 	}
 
 	public static class RouterOptions {
-		Class _klass;
+		Class<? extends Activity> _klass;
 		RouterCallback _callback;
 		Map<String, String> _defaultParams;
 
@@ -29,7 +29,7 @@ public class Router {
 
 		}
 
-		public RouterOptions(Class klass) {
+		public RouterOptions(Class<? extends Activity> klass) {
 			this._klass = klass;
 		}
 
@@ -37,16 +37,16 @@ public class Router {
 			this._defaultParams = defaultParams;
 		}
 
-		public RouterOptions(Map<String, String> defaultParams, Class klass) {
+		public RouterOptions(Map<String, String> defaultParams, Class<? extends Activity> klass) {
 			this._defaultParams = defaultParams;
 			this._klass = klass;
 		}
 
-		public void setOpenClass(Class klass) {
+		public void setOpenClass(Class<? extends Activity> klass) {
 			this._klass = klass;
 		}
 
-		public Class getOpenClass() {
+		public Class<? extends Activity> getOpenClass() {
 			return this._klass;
 		}
 
@@ -67,7 +67,7 @@ public class Router {
 		}
 	}
 
-	public static class RouterParams {
+	private static class RouterParams {
 		public RouterOptions routerOptions;
 		public Map<String, String> openParams;
 	}
@@ -94,11 +94,11 @@ public class Router {
 		this.map(format, null, options);
 	}
 
-	public void map(String format, Class klass) {
+	public void map(String format, Class<? extends Activity> klass) {
 		this.map(format, klass, null);
 	}
 
-	public void map(String format, Class klass, RouterOptions options) {
+	public void map(String format, Class<? extends Activity> klass, RouterOptions options) {
 		if (options == null) {
 			options = new RouterOptions();
 		}
