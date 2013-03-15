@@ -4,7 +4,7 @@ Routable is an in-app native URL router, for Android.
 
 ## Usage
 
-1. Set up your app's router and URLs:
+Set up your app's router and URLs:
 
 ```java
 import com.usepropeller.routable.Router;
@@ -23,7 +23,7 @@ public class PropellerApplication extends Application {
 }
 ```
 
-2. In your `Activity` classes, add support for the URL params:
+In your `Activity` classes, add support for the URL params:
 
 ```java
 import com.usepropeller.routable.Router;
@@ -34,13 +34,13 @@ public class UserActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         Bundle intentExtras = getIntent().getExtras();
-        // Note this guy, and how it relates to the ":id" above
+        // Note this extra, and how it corresponds to the ":id" above
         String userId = intentExtras.get("id");
     }
 }
 ```
 
-3. *Anywhere* else in your app, open some URLs:
+*Anywhere* else in your app, open some URLs:
 
 ```java
 // starts a new UserActivity
@@ -51,7 +51,11 @@ Router.sharedRouter().open("users/new/Clay/94303");
 
 ## Installation
 
-Routable is currently an Android library project (so no Maven). If you're in a hurry, you can just copy-paste the `Router.java` file; if you're being smart, you should import this project (the entire git repo) into Eclipse and [reference it](http://developer.android.com/tools/projects/projects-eclipse.html#ReferencingLibraryProject). 
+Routable is currently an Android library project (so no Maven).
+
+If you're in a hurry, you can just copy-paste the [Router.java](https://github.com/usepropeller/routable-android/blob/master/src/com/usepropeller/routable/Router.java) file.
+
+Or if you're being a little more proactive, you should import the Routable project (this entire git repo) into Eclipse and [reference it](http://developer.android.com/tools/projects/projects-eclipse.html#ReferencingLibraryProject) in your own project. 
 
 ## Features
 
