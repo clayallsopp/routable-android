@@ -38,6 +38,19 @@ public class UserActivity extends Activity {
         String userId = intentExtras.get("id");
     }
 }
+
+public class NewUserActivity extends Activity {
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        Bundle intentExtras = getIntent().getExtras();
+        // Corresponds to the ":name" above
+        String name = intentExtras.get("name");
+        // Corresponds to the ":zip" above
+        String zip = intentExtras.get("zip");
+    }
+}
 ```
 
 *Anywhere* else in your app, open some URLs:
@@ -79,7 +92,7 @@ Router.sharedRouter().open("logout");
 Sometimes you want to open a URL outside of your app, like a YouTube URL or open a web URL in the browser. You can use Routable to do that:
 
 ```java
-Router.sharedRouter().openExternal("www.youtube.com/watch?v=oHg5SJYRHA0")
+Router.sharedRouter().openExternal("http://www.youtube.com/watch?v=oHg5SJYRHA0")
 ```
 
 ### Multiple Routers
