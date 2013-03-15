@@ -74,6 +74,14 @@ Router.sharedRouter().map("logout", new Router.RouterCallback() {
 Router.sharedRouter().open("logout");
 ```
 
+### Open External URLs
+
+Sometimes you want to open a URL outside of your app, like a YouTube URL or open a web URL in the browser. You can use Routable to do that:
+
+```java
+Router.sharedRouter().openExternal("www.youtube.com/watch?v=oHg5SJYRHA0")
+```
+
 ### Multiple Routers
 
 If you need to use multiple routers, simply create new instances of `Router`:
