@@ -309,28 +309,28 @@ public class Router {
 			return this._cachedRoutes.get(url);
 		}
 
-		String[] parts = url.split("/");
+		String[] givenParts = url.split("/");
 
 		RouterOptions openOptions = null;
 		RouterParams openParams = null;
 		for (Entry<String, RouterOptions> entry : this._routes.entrySet()) {
-			String format = entry.getKey();
-			RouterOptions options = entry.getValue();
-			String[] formatParts = format.split("/");
+			String routerUrl = entry.getKey();
+			RouterOptions routerOptions = entry.getValue();
+			String[] routerParts = routerUrl.split("/");
 
-			if (formatParts.length != parts.length) {
+			if (routerParts.length != givenParts.length) {
 				continue;
 			}
 
-			Map<String, String> formatParams = urlToParamsMap(parts, formatParts);
-			if (formatParams == null) {
+			Map<String, String> givenParams = urlToParamsMap(givenParts, routerParts);
+			if (givenParams == null) {
 				continue;
 			}
 
-			openOptions = options;
+			openOptions = routerOptions;
 			openParams = new RouterParams();
-			openParams.openParams = formatParams;
-			openParams.routerOptions = options;
+			openParams.openParams = givenParams;
+			openParams.routerOptions = routerOptions;
 			break;
 		}
 
