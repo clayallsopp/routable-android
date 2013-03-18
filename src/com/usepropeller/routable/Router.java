@@ -70,16 +70,16 @@ public class Router {
 		}
 
 		public RouterOptions(Class<? extends Activity> klass) {
-			this._klass = klass;
+			this.setOpenClass(klass);
 		}
 
 		public RouterOptions(Map<String, String> defaultParams) {
-			this._defaultParams = defaultParams;
+			this.setDefaultParams(defaultParams);
 		}
 
 		public RouterOptions(Map<String, String> defaultParams, Class<? extends Activity> klass) {
-			this._defaultParams = defaultParams;
-			this._klass = klass;
+			this.setDefaultParams(defaultParams);
+			this.setOpenClass(klass);
 		}
 
 		public void setOpenClass(Class<? extends Activity> klass) {
