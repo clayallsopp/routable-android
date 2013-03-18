@@ -322,25 +322,8 @@ public class Router {
 				continue;
 			}
 
-			boolean matched = true;
-			Map<String, String> formatParams = new HashMap<String, String>();
-			for (int index = 0; index < formatParts.length; index++) {
-				String formatPart = formatParts[index];
-				String checkPart = parts[index];
-
-				if (formatPart.charAt(0) == ':') {
-					String key = formatPart.substring(1, formatPart.length());
-					formatParams.put(key, checkPart);
-					continue;
-				}
-
-				if (!formatPart.equals(checkPart)) {
-					matched = false;
-					break;
-				}
-			}
-
-			if (!matched) {
+			Map<String, String> formatParams = urlToParamsMap(parts, formatParts);
+			if (formatParams == null) {
 				continue;
 			}
 
@@ -357,6 +340,32 @@ public class Router {
 
 		this._cachedRoutes.put(url, openParams);
 		return openParams;
+	}
+
+	/**
+	 *
+	 * @param givenUrlSegments An array representing the URL path attempting to be opened (i.e. ["users", "42"])
+	 * @param routerUrlSegments An array representing a possible URL match for the router (i.e. ["users", ":id"])
+	 * @return A map of URL parameters if it's a match (i.e. {"id" => "42"}) or null if there is no match
+	 */
+	private Map<String, String> urlToParamsMap(String[] givenUrlSegments, String[] routerUrlSegments) {
+		Map<String, String> formatParams = new HashMap<String, String>();
+		for (int index = 0; index < routerUrlSegments.length; index++) {
+			String routerPart = routerUrlSegments[index];
+			String givenPart = givenUrlSegments[index];
+
+			if (routerPart.charAt(0) == ':') {
+				String key = routerPart.substring(1, routerPart.length());
+				formatParams.put(key, givenPart);
+				continue;
+			}
+
+			if (!routerPart.equals(givenPart)) {
+				return null;
+			}
+		}
+
+		return formatParams;
 	}
 
 	/**
