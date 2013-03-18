@@ -13,6 +13,13 @@ import android.test.AndroidTestCase;
 public class RouterTest extends AndroidTestCase {
 	private boolean _called;
 
+	@Override
+	public void setUp() throws Exception {
+		super.setUp();
+
+		this._called = false;
+	}
+
 	public void test_basic() {
 		Router router = new Router();
 		router.map("users/:user_id", ListActivity.class);
@@ -31,35 +38,35 @@ public class RouterTest extends AndroidTestCase {
 
 	public void test_invalid_route() {
 		Router router = new Router();
+		boolean exceptionThrown = false;
 
 		try {
 			router.intentFor("users/4");
-		    fail("Invalid route did not throw exception");
 		} catch (Router.RouteNotFoundException e) {
-			return;
+			exceptionThrown = true;
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail("Incorrect exception throw: " + e.toString());
 		}
 
-		fail("Invalid route did not throw exception");
+		Assert.assertTrue("Invalid route did not throw exception", exceptionThrown);
 	}
 
 	public void test_invalid_context() {
 		Router router = new Router();
 		router.map("users", ListActivity.class);
+		boolean exceptionThrown = false;
 
 		try {
 			router.open("users");
-		    fail("Invalid context did not throw exception");
 		} catch (Router.ContextNotProvided e) {
-			return;
+			exceptionThrown = true;
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail("Incorrect exception throw: " + e.toString());
 		}
 
-		fail("Invalid context did not throw exception");
+		Assert.assertTrue("Invalid context did not throw exception", exceptionThrown);
 	}
 
 	public void test_code_callbacks() {
