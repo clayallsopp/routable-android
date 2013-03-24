@@ -251,21 +251,16 @@ public class Router {
      * @param context The context which is used in the generated {@link Intent}
      */
 	public void open(String url, Bundle extras, Context context) {
-		RouterParams params = this.paramsForUrl(url);
-		RouterOptions options = params.routerOptions;
-		if (options.getCallback() != null) {
-			options.getCallback().run(params.openParams);
-			return;
-		}
-
 		if (context == null) {
 			throw new ContextNotProvided(
 					"You need to supply a context for Router "
 							+ this.toString());
 		}
-		Intent intent = this.intentFor(url);
-		intent.setClass(context, options.getOpenClass());
-		this.addFlagsToIntent(intent, context);
+		Intent intent = this.intentFor(context, url);
+		if (intent == null) {
+			// Means the options weren't opening a new activity
+			return;
+		}
 		if (extras != null) {
 			intent.putExtras(extras);
 		}
@@ -297,6 +292,27 @@ public class Router {
 		for (Entry<String, String> entry : params.openParams.entrySet()) {
 			intent.putExtra(entry.getKey(), entry.getValue());
 		}
+		return intent;
+	}
+
+	/**
+	 *
+	 * @param context The context which is spawning the intent
+     * @param url The URL; for example, "users/16" or "groups/5/topics/20"
+	 * @return The {@link Intent} for the url, with the correct {@link Activity} set.
+	 * @return
+	 */
+	public Intent intentFor(Context context, String url) {
+		RouterParams params = this.paramsForUrl(url);
+		RouterOptions options = params.routerOptions;
+		if (options.getCallback() != null) {
+			options.getCallback().run(params.openParams);
+			return null;
+		}
+
+		Intent intent = intentFor(url);
+		intent.setClass(context, options.getOpenClass());
+		this.addFlagsToIntent(intent, context);
 		return intent;
 	}
 
