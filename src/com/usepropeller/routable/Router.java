@@ -113,6 +113,7 @@ public class Router {
 	}
 
 	private final Map<String, RouterOptions> _routes = new HashMap<String, RouterOptions>();
+	private String _rootUrl = null;
 	private final Map<String, RouterParams> _cachedRoutes = new HashMap<String, RouterParams>();
 	private Context _context;
 
@@ -136,6 +137,13 @@ public class Router {
      */
 	public void setContext(Context context) {
 		this._context = context;
+	}
+
+	/**
+	 * @return The context for the router
+	 */
+	public Context getContext() {
+		return this._context;
 	}
 
 	/**
@@ -170,6 +178,21 @@ public class Router {
 		}
 		options.setOpenClass(klass);
 		this._routes.put(format, options);
+	}
+
+	/**
+	 * Set the root url; used when opening an activity or callback via RouterActivity
+	 * @param rootUrl The URL format to use as the root
+	 */
+	public void setRootUrl(String rootUrl) {
+		this._rootUrl = rootUrl;
+	}
+
+	/**
+	 * @return The router's root URL, or null.
+	 */
+	public String getRootUrl() {
+		return this._rootUrl;
 	}
 
 	/**
@@ -256,6 +279,13 @@ public class Router {
 					"You need to supply a context for Router "
 							+ this.toString());
 		}
+		RouterParams params = this.paramsForUrl(url);
+		RouterOptions options = params.routerOptions;
+		if (options.getCallback() != null) {
+			options.getCallback().run(params.openParams);
+			return;
+		}
+
 		Intent intent = this.intentFor(context, url);
 		if (intent == null) {
 			// Means the options weren't opening a new activity
@@ -296,17 +326,25 @@ public class Router {
 	}
 
 	/**
+	 * @param url The URL to check
+	 * @return Whether or not the URL refers to an anonymous callback function
+	 */
+	public boolean isCallbackUrl(String url) {
+		RouterParams params = this.paramsForUrl(url);
+		RouterOptions options = params.routerOptions;
+		return options.getCallback() != null;
+	}
+
+	/**
 	 *
 	 * @param context The context which is spawning the intent
      * @param url The URL; for example, "users/16" or "groups/5/topics/20"
-	 * @return The {@link Intent} for the url, with the correct {@link Activity} set.
-	 * @return
+	 * @return The {@link Intent} for the url, with the correct {@link Activity} set, or null.
 	 */
 	public Intent intentFor(Context context, String url) {
 		RouterParams params = this.paramsForUrl(url);
 		RouterOptions options = params.routerOptions;
 		if (options.getCallback() != null) {
-			options.getCallback().run(params.openParams);
 			return null;
 		}
 
