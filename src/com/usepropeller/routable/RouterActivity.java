@@ -19,10 +19,8 @@ public class RouterActivity extends Activity {
 	    }
 	    else {
 		    Uri data = intent.getData();
-		    url = data.getPath();
-		    if (url.startsWith("/")) {
-		    	url = url.substring(1);
-		    }
+		    String protocol = data.getScheme() + "://";
+		    url = data.toString().replaceFirst(protocol, "");
 		    if (Router.sharedRouter().getRootUrl() != null) {
 			    Router.sharedRouter().open(Router.sharedRouter().getRootUrl());
 		    }
