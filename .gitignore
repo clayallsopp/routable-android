@@ -13,3 +13,4 @@ res/
 target/
 *.iml
 gen-external-apklibs/
+.idea/
