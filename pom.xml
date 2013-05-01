@@ -11,7 +11,7 @@
 
     <modules>
         <module>routable</module>
-        <module>routable-mainapp</module>
+        <!--<module>routable-mainapp</module>-->
         <module>routable-tests</module>
     </modules>
 
