@@ -27,7 +27,7 @@
 
         <dependency>
             <groupId>com.usepropeller.routable.android</groupId>
-            <artifactId>routable-library</artifactId>
+            <artifactId>routable</artifactId>
             <version>1.0.0-SNAPSHOT</version>
             <type>apklib</type>
         </dependency>

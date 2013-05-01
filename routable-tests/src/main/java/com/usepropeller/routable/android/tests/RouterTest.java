@@ -22,6 +22,7 @@ public class RouterTest extends AndroidTestCase {
 
 	public void test_basic() {
 		Router router = new Router();
+        router.setContext(mContext);
 		router.map("users/:user_id", ListActivity.class);
 
 		Intent intent = router.intentFor("users/4");
@@ -30,6 +31,7 @@ public class RouterTest extends AndroidTestCase {
 
 	public void test_empty() {
 		Router router = new Router();
+        router.setContext(mContext);
 		router.map("users", ListActivity.class);
 
 		Intent intent = router.intentFor("users");
@@ -38,6 +40,7 @@ public class RouterTest extends AndroidTestCase {
 
 	public void test_invalid_route() {
 		Router router = new Router();
+        router.setContext(mContext);
 		boolean exceptionThrown = false;
 
 		try {
@@ -71,6 +74,7 @@ public class RouterTest extends AndroidTestCase {
 
 	public void test_code_callbacks() {
 		Router router = new Router();
+        router.setContext(mContext);
 		router.map("callback", new Router.RouterCallback() {
 			@Override
 			public void run(Map<String, String> params) {
@@ -85,6 +89,7 @@ public class RouterTest extends AndroidTestCase {
 
 	public void test_code_callbacks_with_params() {
 		Router router = new Router();
+        router.setContext(mContext);
 		router.map("callback/:id", new Router.RouterCallback() {
 			@Override
 			public void run(Map<String, String> params) {

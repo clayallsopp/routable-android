@@ -10,7 +10,7 @@
     <name>Routable - Android Library Projects - Parent</name>
 
     <modules>
-        <module>routable-library</module>
+        <module>routable</module>
         <module>routable-mainapp</module>
         <module>routable-tests</module>
     </modules>

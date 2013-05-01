@@ -72,7 +72,7 @@ You can build this project using ```mvn clean install``` - you'll need an androi
 
 If you just want to build the apklib itself to import into another project, you can do the following:
 ```
-cd routable-library
+cd routable
 mvn clean install
 ```
 
@@ -80,7 +80,7 @@ To include routable-android in your Android project, add the following dependenc
 ```
 <dependency>
     <groupId>com.usepropeller.routable.android</groupId>
-    <artifactId>routable-library</artifactId>
+    <artifactId>routable</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 </dependency>
 ```
