@@ -11,95 +11,95 @@ import android.content.Intent;
 import android.test.AndroidTestCase;
 
 public class RouterTest extends AndroidTestCase {
-	private boolean _called;
+    private boolean _called;
 
-	@Override
-	public void setUp() throws Exception {
-		super.setUp();
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
 
-		this._called = false;
-	}
+        this._called = false;
+    }
 
-	public void test_basic() {
-		Router router = new Router();
+    public void test_basic() {
+        Router router = new Router();
         router.setContext(mContext);
-		router.map("users/:user_id", ListActivity.class);
+        router.map("users/:user_id", ListActivity.class);
 
-		Intent intent = router.intentFor("users/4");
-		Assert.assertEquals("4", intent.getExtras().getString("user_id"));
-	}
+        Intent intent = router.intentFor("users/4");
+        Assert.assertEquals("4", intent.getExtras().getString("user_id"));
+    }
 
-	public void test_empty() {
-		Router router = new Router();
+    public void test_empty() {
+        Router router = new Router();
         router.setContext(mContext);
-		router.map("users", ListActivity.class);
+        router.map("users", ListActivity.class);
 
-		Intent intent = router.intentFor("users");
-		Assert.assertNull(intent.getExtras());
-	}
+        Intent intent = router.intentFor("users");
+        Assert.assertNull(intent.getExtras());
+    }
 
-	public void test_invalid_route() {
-		Router router = new Router();
+    public void test_invalid_route() {
+        Router router = new Router();
         router.setContext(mContext);
-		boolean exceptionThrown = false;
+        boolean exceptionThrown = false;
 
-		try {
-			router.intentFor("users/4");
-		} catch (Router.RouteNotFoundException e) {
-			exceptionThrown = true;
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail("Incorrect exception throw: " + e.toString());
-		}
+        try {
+            router.intentFor("users/4");
+        } catch (Router.RouteNotFoundException e) {
+            exceptionThrown = true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail("Incorrect exception throw: " + e.toString());
+        }
 
-		Assert.assertTrue("Invalid route did not throw exception", exceptionThrown);
-	}
+        Assert.assertTrue("Invalid route did not throw exception", exceptionThrown);
+    }
 
-	public void test_invalid_context() {
-		Router router = new Router();
-		router.map("users", ListActivity.class);
-		boolean exceptionThrown = false;
+    public void test_invalid_context() {
+        Router router = new Router();
+        router.map("users", ListActivity.class);
+        boolean exceptionThrown = false;
 
-		try {
-			router.open("users");
-		} catch (Router.ContextNotProvided e) {
-			exceptionThrown = true;
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail("Incorrect exception throw: " + e.toString());
-		}
+        try {
+            router.open("users");
+        } catch (Router.ContextNotProvided e) {
+            exceptionThrown = true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail("Incorrect exception throw: " + e.toString());
+        }
 
-		Assert.assertTrue("Invalid context did not throw exception", exceptionThrown);
-	}
+        Assert.assertTrue("Invalid context did not throw exception", exceptionThrown);
+    }
 
-	public void test_code_callbacks() {
-		Router router = new Router();
+    public void test_code_callbacks() {
+        Router router = new Router();
         router.setContext(mContext);
-		router.map("callback", new Router.RouterCallback() {
-			@Override
-			public void run(Map<String, String> params) {
-				RouterTest.this._called = true;
-			}
-		});
+        router.map("callback", new Router.RouterCallback() {
+            @Override
+            public void run(Map<String, String> params) {
+                RouterTest.this._called = true;
+            }
+        });
 
-		router.open("callback");
+        router.open("callback");
 
-		Assert.assertTrue(this._called);
-	}
+        Assert.assertTrue(this._called);
+    }
 
-	public void test_code_callbacks_with_params() {
-		Router router = new Router();
+    public void test_code_callbacks_with_params() {
+        Router router = new Router();
         router.setContext(mContext);
-		router.map("callback/:id", new Router.RouterCallback() {
-			@Override
-			public void run(Map<String, String> params) {
-				RouterTest.this._called = true;
-				Assert.assertEquals("123", params.get("id"));
-			}
-		});
+        router.map("callback/:id", new Router.RouterCallback() {
+            @Override
+            public void run(Map<String, String> params) {
+                RouterTest.this._called = true;
+                Assert.assertEquals("123", params.get("id"));
+            }
+        });
 
-		router.open("callback/123");
+        router.open("callback/123");
 
-		Assert.assertTrue(this._called);
-	}
+        Assert.assertTrue(this._called);
+    }
 }
