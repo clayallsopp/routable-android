@@ -64,11 +64,36 @@ Router.sharedRouter().open("users/new/Clay/94303");
 
 ## Installation
 
-Routable is currently an Android library project (so no Maven).
+Routable is currently an Android library project packaged as an [apklib](https://code.google.com/p/maven-android-plugin/wiki/ApkLib) via maven.
+
+### Maven
+
+You can build this project using ```mvn clean install``` - you'll need an android emulator running in order for the integration tests to run properly.
+
+If you just want to build the apklib itself to import into another project, you can do the following:
+```
+cd routable-library
+mvn clean install
+```
+
+To include routable-android in your Android project, add the following dependency to your pom.xml file:
+```
+<dependency>
+    <groupId>com.usepropeller.routable.android</groupId>
+    <artifactId>routable-library</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+</dependency>
+```
+
+### Non-Maven
+
+If you're not using maven, you add the Routable project as a [git submodule](https://www.kernel.org/pub/software/scm/git/docs/git-submodule.html) into your source base. For example:
+```
+git submodule add git://github.com/usepropeller/routable-android.git
+```
+Then you can import it into Eclipse and [reference it](http://developer.android.com/tools/projects/projects-eclipse.html#ReferencingLibraryProject) in your own project.
 
 If you're in a hurry, you can just copy-paste the [Router.java](https://github.com/usepropeller/routable-android/blob/master/src/com/usepropeller/routable/Router.java) file.
-
-Or if you're being a little more proactive, you should import the Routable project (this entire git repo) into Eclipse and [reference it](http://developer.android.com/tools/projects/projects-eclipse.html#ReferencingLibraryProject) in your own project. 
 
 ## Features
 
