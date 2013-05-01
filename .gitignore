@@ -10,3 +10,7 @@ _layouts
 .DS_Store
 gh-pages
 res/
+target/
+*.iml
+gen-external-apklibs/
+.idea/
