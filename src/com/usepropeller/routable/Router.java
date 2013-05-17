@@ -209,7 +209,7 @@ public class Router {
      * @param context The context which is used in the generated {@link Intent}
      */
 	public void openExternal(String url, Context context) {
-		this.openExternal(url, null, this._context);
+		this.openExternal(url, null, context);
 	}
 
 	/**
@@ -264,7 +264,7 @@ public class Router {
      * @param context The context which is used in the generated {@link Intent}
      */
 	public void open(String url, Context context) {
-		this.open(url, null, this._context);
+		this.open(url, null, context);
 	}
 
 	/**
