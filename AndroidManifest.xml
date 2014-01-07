@@ -1,9 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.usepropeller.routable"
-    android:versionCode="1"
-    android:versionName="1.0" >
-    <application
-        android:name="routable">
-    </application>
-    <uses-sdk android:minSdkVersion="3" />
+          package="com.usepropeller.routable"
+          android:versionName="1.0.0"
+          android:versionCode="1">
+
+    <uses-sdk
+            android:minSdkVersion="3" />
+
+    <application />
+
 </manifest>
