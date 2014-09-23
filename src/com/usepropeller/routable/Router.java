@@ -407,6 +407,10 @@ public class Router {
 		for (int index = 0; index < routerUrlSegments.length; index++) {
 			String routerPart = routerUrlSegments[index];
 			String givenPart = givenUrlSegments[index];
+			
+			if (routerPart.length() == 0) {
+                		continue;
+            		}
 
 			if (routerPart.charAt(0) == ':') {
 				String key = routerPart.substring(1, routerPart.length());
