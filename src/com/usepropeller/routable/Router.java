@@ -370,8 +370,8 @@ public class Router {
 		RouterOptions openOptions = null;
 		RouterParams openParams = null;
 		for (Entry<String, RouterOptions> entry : this._routes.entrySet()) {
-			String routerUrl = entry.getKey();
-			RouterOptions routerOptions = entry.getValue();
+			String routerUrl = cleanUrl(entry.getKey());
+			RouterOptions routerOptions = cleanUrl(entry.getValue());
 			String[] routerParts = routerUrl.split("/");
 
 			if (routerParts.length != givenParts.length) {
