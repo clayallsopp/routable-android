@@ -97,4 +97,20 @@ public class RouterTest extends AndroidTestCase {
 
 		Assert.assertTrue(this._called);
 	}
+
+    public void test_url_starting_with_slash() {
+        Router router = new Router();
+        router.map("/users", ListActivity.class);
+
+        Intent intent = router.intentFor("/users");
+        Assert.assertNull(intent.getExtras());
+    }
+
+    public void test_url_starting_with_slash_with_params() {
+        Router router = new Router();
+        router.map("/users/:user_id", ListActivity.class);
+
+        Intent intent = router.intentFor("/users/4");
+        Assert.assertEquals("4", intent.getExtras().getString("user_id"));
+    }
 }
