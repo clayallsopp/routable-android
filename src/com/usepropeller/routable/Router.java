@@ -359,11 +359,13 @@ public class Router {
 	 * each of the parameters (like ":id") has been parsed.
 	 */
 	private RouterParams paramsForUrl(String url) {
+        final String cleanedUrl = cleanUrl(url);
+
 		if (this._cachedRoutes.get(url) != null) {
-			return this._cachedRoutes.get(url);
+			return this._cachedRoutes.get(cleanedUrl);
 		}
 
-		String[] givenParts = url.split("/");
+		String[] givenParts = cleanedUrl.split("/");
 
 		RouterOptions openOptions = null;
 		RouterParams openParams = null;
@@ -392,7 +394,7 @@ public class Router {
 			throw new RouteNotFoundException("No route found for url " + url);
 		}
 
-		this._cachedRoutes.put(url, openParams);
+		this._cachedRoutes.put(cleanedUrl, openParams);
 		return openParams;
 	}
 
@@ -407,10 +409,6 @@ public class Router {
 		for (int index = 0; index < routerUrlSegments.length; index++) {
 			String routerPart = routerUrlSegments[index];
 			String givenPart = givenUrlSegments[index];
-			
-			if (routerPart.length() == 0) {
-                		continue;
-            		}
 
 			if (routerPart.charAt(0) == ':') {
 				String key = routerPart.substring(1, routerPart.length());
@@ -425,6 +423,18 @@ public class Router {
 
 		return formatParams;
 	}
+
+    /**
+     * Clean up url
+     * @param url
+     * @return cleaned url
+     */
+    private String cleanUrl(String url) {
+        if (url.startsWith("/")) {
+            return url.substring(1, url.length());
+        }
+        return url;
+    }
 
 	/**
 	 * Thrown if a given route is not found.
