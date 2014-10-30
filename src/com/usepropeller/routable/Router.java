@@ -279,22 +279,26 @@ public class Router {
 					"You need to supply a context for Router "
 							+ this.toString());
 		}
-		RouterParams params = this.paramsForUrl(url);
-		RouterOptions options = params.routerOptions;
-		if (options.getCallback() != null) {
-			options.getCallback().run(params.openParams);
-			return;
-		}
+        try {
+            RouterParams params = this.paramsForUrl(url);
+            RouterOptions options = params.routerOptions;
+            if (options.getCallback() != null) {
+                options.getCallback().run(params.openParams);
+                return;
+            }
 
-		Intent intent = this.intentFor(context, url);
-		if (intent == null) {
-			// Means the options weren't opening a new activity
-			return;
-		}
-		if (extras != null) {
-			intent.putExtras(extras);
-		}
-		context.startActivity(intent);
+            Intent intent = this.intentFor(context, url);
+            if (intent == null) {
+                // Means the options weren't opening a new activity
+                return;
+            }
+            if (extras != null) {
+                intent.putExtras(extras);
+            }
+            context.startActivity(intent);
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
 	}
 
 	/*
