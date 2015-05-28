@@ -113,4 +113,22 @@ public class RouterTest extends AndroidTestCase {
         Intent intent = router.intentFor("/users/4");
         Assert.assertEquals("4", intent.getExtras().getString("user_id"));
     }
+
+    /**
+     * Test with query params.
+     */
+    @Test
+    public void test_url_with_query_params() {
+        Router router = new Router();
+        router.map("/users/:id", ListActivity.class);
+
+        Intent intent = router.intentFor("/users/4?title=abcd");
+        Assert.assertEquals("4", intent.getExtras().getString("id"));
+        Assert.assertEquals("abcd", intent.getExtras().getString("title"));
+
+        intent = router.intentFor("/users/4?title=abcd&name=router");
+        Assert.assertEquals("4", intent.getExtras().getString("id"));
+        Assert.assertEquals("abcd", intent.getExtras().getString("title"));
+        Assert.assertEquals("router", intent.getExtras().getString("name"));
+    }
 }
