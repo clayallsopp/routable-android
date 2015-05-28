@@ -117,7 +117,6 @@ public class RouterTest extends AndroidTestCase {
     /**
      * Test with query params.
      */
-    @Test
     public void test_url_with_query_params() {
         Router router = new Router();
         router.map("/users/:id", ListActivity.class);
