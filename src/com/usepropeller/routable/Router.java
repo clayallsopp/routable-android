@@ -323,7 +323,7 @@ public class Router {
 			return;
 		}
 
-		Intent intent = this.intentFor(context, url);
+		Intent intent = this.intentFor(context, params);
 		if (intent == null) {
 			// Means the options weren't opening a new activity
 			return;
@@ -349,18 +349,23 @@ public class Router {
 	 */
 	public Intent intentFor(String url) {
 		RouterParams params = this.paramsForUrl(url);
-		RouterOptions options = params.routerOptions;
-		Intent intent = new Intent();
-		if (options.getDefaultParams() != null) {
-			for (Entry<String, String> entry : options.getDefaultParams().entrySet()) {
-				intent.putExtra(entry.getKey(), entry.getValue());
-			}
-		}
-		for (Entry<String, String> entry : params.openParams.entrySet()) {
-			intent.putExtra(entry.getKey(), entry.getValue());
-		}
-		return intent;
+
+        return intentFor(params);
 	}
+
+    private Intent intentFor(RouterParams params) {
+        RouterOptions options = params.routerOptions;
+        Intent intent = new Intent();
+        if (options.getDefaultParams() != null) {
+            for (Entry<String, String> entry : options.getDefaultParams().entrySet()) {
+                intent.putExtra(entry.getKey(), entry.getValue());
+            }
+        }
+        for (Entry<String, String> entry : params.openParams.entrySet()) {
+            intent.putExtra(entry.getKey(), entry.getValue());
+        }
+        return intent;
+    }
 
 	/**
 	 * @param url The URL to check
@@ -380,16 +385,21 @@ public class Router {
 	 */
 	public Intent intentFor(Context context, String url) {
 		RouterParams params = this.paramsForUrl(url);
-		RouterOptions options = params.routerOptions;
-		if (options.getCallback() != null) {
-			return null;
-		}
 
-		Intent intent = intentFor(url);
-		intent.setClass(context, options.getOpenClass());
-		this.addFlagsToIntent(intent, context);
-		return intent;
+        return intentFor(context, params);
 	}
+
+    private Intent intentFor(Context context, RouterParams params) {
+        RouterOptions options = params.routerOptions;
+        if (options.getCallback() != null) {
+            return null;
+        }
+
+        Intent intent = intentFor(params);
+        intent.setClass(context, options.getOpenClass());
+        this.addFlagsToIntent(intent, context);
+        return intent;
+    }
 
 	/*
 	 * Takes a url (i.e. "/users/16/hello") and breaks it into a {@link RouterParams} instance where
@@ -408,7 +418,6 @@ public class Router {
 
 		String[] givenParts = urlPath.split("/");
 
-		RouterOptions openOptions = null;
 		RouterParams routerParams = null;
 		for (Entry<String, RouterOptions> entry : this._routes.entrySet()) {
 			String routerUrl = cleanUrl(entry.getKey());
@@ -424,14 +433,13 @@ public class Router {
 				continue;
 			}
 
-			openOptions = routerOptions;
 			routerParams = new RouterParams();
 			routerParams.openParams = givenParams;
 			routerParams.routerOptions = routerOptions;
 			break;
 		}
 
-		if (openOptions == null || routerParams == null) {
+		if (routerParams == null) {
 			throw new RouteNotFoundException("No route found for url " + url);
 		}
 
