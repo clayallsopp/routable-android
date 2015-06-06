@@ -26,7 +26,9 @@
 
 package com.usepropeller.routable;
 
+import java.net.URI;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -35,6 +37,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URLEncodedUtils;
 
 public class Router {
 	private static final Router _router = new Router();
@@ -361,11 +366,15 @@ public class Router {
 	private RouterParams paramsForUrl(String url) {
         final String cleanedUrl = cleanUrl(url);
 
-		if (this._cachedRoutes.get(url) != null) {
+		URI parsedUri = URI.create("http://tempuri.org/" + cleanedUrl);
+
+		String urlPath = parsedUri.getPath().substring(1);
+
+		if (this._cachedRoutes.get(cleanedUrl) != null) {
 			return this._cachedRoutes.get(cleanedUrl);
 		}
 
-		String[] givenParts = cleanedUrl.split("/");
+		String[] givenParts = urlPath.split("/");
 
 		RouterOptions openOptions = null;
 		RouterParams openParams = null;
@@ -392,6 +401,12 @@ public class Router {
 
 		if (openOptions == null || openParams == null) {
 			throw new RouteNotFoundException("No route found for url " + url);
+		}
+
+		List<NameValuePair> query = URLEncodedUtils.parse(parsedUri, "utf-8");
+
+		for (NameValuePair pair : query) {
+			openParams.openParams.put(pair.getName(), pair.getValue());
 		}
 
 		this._cachedRoutes.put(cleanedUrl, openParams);
