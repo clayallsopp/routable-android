@@ -57,8 +57,38 @@ public class Router {
      * to a Router URL.
      */
 	public static abstract class RouterCallback {
-		public abstract void run(Map<String, String> params);
+		public abstract void run(RouteContext context);
 	}
+
+    /**
+     * The class supplied to custom callbacks to describe the route route
+     */
+	public class RouteContext {
+		Map<String, String> _params;
+		Bundle _extras;
+        Context _context;
+
+        public RouteContext(Map<String, String> params, Bundle extras, Context context) {
+			_params = params;
+            _extras = extras;
+            _context = context;
+        }
+
+        /**
+         * Returns the route parameters as specified by the configured route
+         */
+		public Map<String, String> getParams() { return _params; }
+
+        /**
+         * Returns the extras supplied with the route
+         */
+		public Bundle getExtras() { return _extras; }
+
+        /**
+         * Returns the Android Context that should be used to open the route
+         */
+        public Context getContext() { return _context; }
+    }
 
 	/**
      * The class used to determine behavior when opening a URL.
@@ -287,7 +317,9 @@ public class Router {
 		RouterParams params = this.paramsForUrl(url);
 		RouterOptions options = params.routerOptions;
 		if (options.getCallback() != null) {
-			options.getCallback().run(params.openParams);
+            RouteContext routeContext = new RouteContext(params.openParams, extras, context);
+
+			options.getCallback().run(routeContext);
 			return;
 		}
 
@@ -377,7 +409,7 @@ public class Router {
 		String[] givenParts = urlPath.split("/");
 
 		RouterOptions openOptions = null;
-		RouterParams openParams = null;
+		RouterParams routerParams = null;
 		for (Entry<String, RouterOptions> entry : this._routes.entrySet()) {
 			String routerUrl = cleanUrl(entry.getKey());
 			RouterOptions routerOptions = entry.getValue();
@@ -393,24 +425,24 @@ public class Router {
 			}
 
 			openOptions = routerOptions;
-			openParams = new RouterParams();
-			openParams.openParams = givenParams;
-			openParams.routerOptions = routerOptions;
+			routerParams = new RouterParams();
+			routerParams.openParams = givenParams;
+			routerParams.routerOptions = routerOptions;
 			break;
 		}
 
-		if (openOptions == null || openParams == null) {
+		if (openOptions == null || routerParams == null) {
 			throw new RouteNotFoundException("No route found for url " + url);
 		}
 
 		List<NameValuePair> query = URLEncodedUtils.parse(parsedUri, "utf-8");
 
 		for (NameValuePair pair : query) {
-			openParams.openParams.put(pair.getName(), pair.getValue());
+			routerParams.openParams.put(pair.getName(), pair.getValue());
 		}
 
-		this._cachedRoutes.put(cleanedUrl, openParams);
-		return openParams;
+		this._cachedRoutes.put(cleanedUrl, routerParams);
+		return routerParams;
 	}
 
 	/**
