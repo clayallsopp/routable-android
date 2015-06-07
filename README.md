@@ -78,7 +78,7 @@ You can call arbitrary blocks of code with Routable:
 
 ```java
 Router.sharedRouter().map("logout", new Router.RouterCallback() {
-    public void run(Map<String, String> extras) {
+    public void run(Router.RouteContext context) {
         User.logout();
     }
 });
