@@ -57,8 +57,38 @@ public class Router {
      * to a Router URL.
      */
 	public static abstract class RouterCallback {
-		public abstract void run(Map<String, String> params);
+		public abstract void run(RouteContext context);
 	}
+
+    /**
+     * The class supplied to custom callbacks to describe the route route
+     */
+	public class RouteContext {
+		Map<String, String> _params;
+		Bundle _extras;
+        Context _context;
+
+        public RouteContext(Map<String, String> params, Bundle extras, Context context) {
+			_params = params;
+            _extras = extras;
+            _context = context;
+        }
+
+        /**
+         * Returns the route parameters as specified by the configured route
+         */
+		public Map<String, String> getParams() { return _params; }
+
+        /**
+         * Returns the extras supplied with the route
+         */
+		public Bundle getExtras() { return _extras; }
+
+        /**
+         * Returns the Android Context that should be used to open the route
+         */
+        public Context getContext() { return _context; }
+    }
 
 	/**
      * The class used to determine behavior when opening a URL.
@@ -287,11 +317,13 @@ public class Router {
 		RouterParams params = this.paramsForUrl(url);
 		RouterOptions options = params.routerOptions;
 		if (options.getCallback() != null) {
-			options.getCallback().run(params.openParams);
+            RouteContext routeContext = new RouteContext(params.openParams, extras, context);
+
+			options.getCallback().run(routeContext);
 			return;
 		}
 
-		Intent intent = this.intentFor(context, url);
+		Intent intent = this.intentFor(context, params);
 		if (intent == null) {
 			// Means the options weren't opening a new activity
 			return;
@@ -317,18 +349,23 @@ public class Router {
 	 */
 	public Intent intentFor(String url) {
 		RouterParams params = this.paramsForUrl(url);
-		RouterOptions options = params.routerOptions;
-		Intent intent = new Intent();
-		if (options.getDefaultParams() != null) {
-			for (Entry<String, String> entry : options.getDefaultParams().entrySet()) {
-				intent.putExtra(entry.getKey(), entry.getValue());
-			}
-		}
-		for (Entry<String, String> entry : params.openParams.entrySet()) {
-			intent.putExtra(entry.getKey(), entry.getValue());
-		}
-		return intent;
+
+        return intentFor(params);
 	}
+
+    private Intent intentFor(RouterParams params) {
+        RouterOptions options = params.routerOptions;
+        Intent intent = new Intent();
+        if (options.getDefaultParams() != null) {
+            for (Entry<String, String> entry : options.getDefaultParams().entrySet()) {
+                intent.putExtra(entry.getKey(), entry.getValue());
+            }
+        }
+        for (Entry<String, String> entry : params.openParams.entrySet()) {
+            intent.putExtra(entry.getKey(), entry.getValue());
+        }
+        return intent;
+    }
 
 	/**
 	 * @param url The URL to check
@@ -348,16 +385,21 @@ public class Router {
 	 */
 	public Intent intentFor(Context context, String url) {
 		RouterParams params = this.paramsForUrl(url);
-		RouterOptions options = params.routerOptions;
-		if (options.getCallback() != null) {
-			return null;
-		}
 
-		Intent intent = intentFor(url);
-		intent.setClass(context, options.getOpenClass());
-		this.addFlagsToIntent(intent, context);
-		return intent;
+        return intentFor(context, params);
 	}
+
+    private Intent intentFor(Context context, RouterParams params) {
+        RouterOptions options = params.routerOptions;
+        if (options.getCallback() != null) {
+            return null;
+        }
+
+        Intent intent = intentFor(params);
+        intent.setClass(context, options.getOpenClass());
+        this.addFlagsToIntent(intent, context);
+        return intent;
+    }
 
 	/*
 	 * Takes a url (i.e. "/users/16/hello") and breaks it into a {@link RouterParams} instance where
@@ -376,8 +418,7 @@ public class Router {
 
 		String[] givenParts = urlPath.split("/");
 
-		RouterOptions openOptions = null;
-		RouterParams openParams = null;
+		RouterParams routerParams = null;
 		for (Entry<String, RouterOptions> entry : this._routes.entrySet()) {
 			String routerUrl = cleanUrl(entry.getKey());
 			RouterOptions routerOptions = entry.getValue();
@@ -392,25 +433,24 @@ public class Router {
 				continue;
 			}
 
-			openOptions = routerOptions;
-			openParams = new RouterParams();
-			openParams.openParams = givenParams;
-			openParams.routerOptions = routerOptions;
+			routerParams = new RouterParams();
+			routerParams.openParams = givenParams;
+			routerParams.routerOptions = routerOptions;
 			break;
 		}
 
-		if (openOptions == null || openParams == null) {
+		if (routerParams == null) {
 			throw new RouteNotFoundException("No route found for url " + url);
 		}
 
 		List<NameValuePair> query = URLEncodedUtils.parse(parsedUri, "utf-8");
 
 		for (NameValuePair pair : query) {
-			openParams.openParams.put(pair.getName(), pair.getValue());
+			routerParams.openParams.put(pair.getName(), pair.getValue());
 		}
 
-		this._cachedRoutes.put(cleanedUrl, openParams);
-		return openParams;
+		this._cachedRoutes.put(cleanedUrl, routerParams);
+		return routerParams;
 	}
 
 	/**

@@ -74,8 +74,10 @@ public class RouterTest extends AndroidTestCase {
 		Router router = new Router(this.getContext());
 		router.map("callback", new Router.RouterCallback() {
 			@Override
-			public void run(Map<String, String> params) {
+			public void run(Router.RouteContext context) {
 				RouterTest.this._called = true;
+
+                Assert.assertNotNull(context.getContext());
 			}
 		});
 
@@ -88,13 +90,31 @@ public class RouterTest extends AndroidTestCase {
 		Router router = new Router(this.getContext());
 		router.map("callback/:id", new Router.RouterCallback() {
 			@Override
-			public void run(Map<String, String> params) {
+			public void run(Router.RouteContext context) {
 				RouterTest.this._called = true;
-				Assert.assertEquals("123", params.get("id"));
+				Assert.assertEquals("123", context.getParams().get("id"));
 			}
 		});
 
 		router.open("callback/123");
+
+		Assert.assertTrue(this._called);
+	}
+
+	public void test_code_callbacks_with_extras() {
+		Router router = new Router(this.getContext());
+		router.map("callback/:id", new Router.RouterCallback() {
+            @Override
+            public void run(Router.RouteContext context) {
+                RouterTest.this._called = true;
+                Assert.assertEquals("value", context.getExtras().getString("test"));
+            }
+        });
+
+        Bundle extras = new Bundle();
+        extras.putString("test", "value");
+
+		router.open("callback/123", extras);
 
 		Assert.assertTrue(this._called);
 	}
