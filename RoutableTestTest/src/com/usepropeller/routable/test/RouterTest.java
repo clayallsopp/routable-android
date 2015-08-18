@@ -176,4 +176,76 @@ public class RouterTest extends AndroidTestCase {
         Intent intent = router.intentFor("/users/4");
         Assert.assertEquals("4", intent.getExtras().getString("user_id"));
     }
+
+
+	/**
+	 * Testing cases for typed parameter
+	 */
+	public void test_basic_with_type() {
+		{	// Testing case for int value
+			Router router = new Router();
+			router.map("users/i:user_id", ListActivity.class);
+			Assert.assertEquals(4, router.intentFor("users/4").getExtras().getInt("user_id"));
+		}
+		{	// Testing case for long value
+			Router router = new Router();
+			router.map("users/l:user_id", ListActivity.class);
+			Assert.assertEquals(4L, router.intentFor("users/4").getExtras().getLong("user_id"));
+		}
+		{	// Testing case for float value
+			Router router = new Router();
+			router.map("users/f:user_id", ListActivity.class);
+			Assert.assertEquals(4.5f, router.intentFor("users/4.5").getExtras().getFloat("user_id"));
+		}
+		{	// Testing case for double value
+			Router router = new Router();
+			router.map("users/d:user_id", ListActivity.class);
+			Assert.assertEquals(4.5, router.intentFor("users/4.5").getExtras().getDouble("user_id"));
+		}
+		{	// Testing case for string value
+			Router router = new Router();
+			router.map("users/s:user_id", ListActivity.class);
+			Assert.assertEquals("text", router.intentFor("users/text").getExtras().getString("user_id"));
+		}
+	}
+
+
+	/**
+	 * WARNING: Because the original constructor `RouteContext` only accept `Map<String, String>` as
+	 * its param, so I can ONLY SUPPORT STRING TYPE!!! Parameter with other type will be ignored.
+	 */
+	public void test_code_callbacks_with_typed_params() {
+		Router router = new Router(this.getContext());
+		router.map("callback/:defaultType/s:supportType/i:invalidType", new Router.RouterCallback() {
+			@Override
+			public void run(Router.RouteContext context) {
+				RouterTest.this._called = true;
+				Assert.assertEquals("ok", context.getParams().get("defaultType"));
+				Assert.assertEquals("alsoOk", context.getParams().get("supportType"));
+				Assert.assertEquals(null, context.getParams().get("invalid"));
+			}
+		});
+
+		router.open("callback/ok/alsoOk/invalid");
+
+		Assert.assertTrue(this._called);
+	}
+
+
+	public void test_url_querystring_with_typed_param() {
+		Router router = new Router();
+		router.map("/users/:defaultStringValue/i:intValue/l:longValue/f:floatValue/d:doubleValue/s:stringValue", ListActivity.class);
+
+		Intent intent = router.intentFor("/users/string/1/2/3.0/4.0/anotherString/?key1=val2");
+		Bundle extras = intent.getExtras();
+
+		Assert.assertEquals("string", extras.getString("defaultStringValue"));
+		Assert.assertEquals(1, extras.getInt("intValue"));
+		Assert.assertEquals(2L, extras.getLong("longValue"));
+		Assert.assertEquals(3.0f, extras.getFloat("floatValue"));
+		Assert.assertEquals(4.0, extras.getDouble("doubleValue"));
+		Assert.assertEquals("anotherString", extras.getString("stringValue"));
+		Assert.assertEquals("val2", extras.getString("key1"));
+	}
+
 }

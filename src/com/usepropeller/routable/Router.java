@@ -6,25 +6,35 @@
     Licensed under the MIT License.
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
-	of this software and associated documentation files (the "Software"), to deal
-	in the Software without restriction, including without limitation the rights
-	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-	copies of the Software, and to permit persons to whom the Software is
-	furnished to do so, subject to the following conditions:
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
 
-	The above copyright notice and this permission notice shall be included in
-	all copies or substantial portions of the Software.
+    The above copyright notice and this permission notice shall be included in
+    all copies or substantial portions of the Software.
 
-	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-	THE SOFTWARE.
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+    THE SOFTWARE.
 */
 
 package com.usepropeller.routable;
+
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Bundle;
+import android.text.TextUtils;
+
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URLEncodedUtils;
 
 import java.net.URI;
 import java.util.HashMap;
@@ -32,69 +42,60 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
-import android.os.Bundle;
-
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URLEncodedUtils;
-
 public class Router {
 	private static final Router _router = new Router();
 
 	/**
-     * A globally accessible Router instance that will work for
-     * most use cases.
-     */
+	 * A globally accessible Router instance that will work for
+	 * most use cases.
+	 */
 	public static Router sharedRouter() {
 		return _router;
 	}
 
-    /**
-     * The class used when you want to map a function (given in `run`)
-     * to a Router URL.
-     */
+	/**
+	 * The class used when you want to map a function (given in `run`)
+	 * to a Router URL.
+	 */
 	public static abstract class RouterCallback {
 		public abstract void run(RouteContext context);
 	}
 
-    /**
-     * The class supplied to custom callbacks to describe the route route
-     */
+	/**
+	 * The class supplied to custom callbacks to describe the route route
+	 */
 	public class RouteContext {
 		Map<String, String> _params;
 		Bundle _extras;
-        Context _context;
+		Context _context;
 
-        public RouteContext(Map<String, String> params, Bundle extras, Context context) {
+		public RouteContext(Map<String, String> params, Bundle extras, Context context) {
 			_params = params;
-            _extras = extras;
-            _context = context;
-        }
+			_extras = extras;
+			_context = context;
+		}
 
-        /**
-         * Returns the route parameters as specified by the configured route
-         */
+		/**
+		 * Returns the route parameters as specified by the configured route
+		 */
 		public Map<String, String> getParams() { return _params; }
 
-        /**
-         * Returns the extras supplied with the route
-         */
+		/**
+		 * Returns the extras supplied with the route
+		 */
 		public Bundle getExtras() { return _extras; }
 
-        /**
-         * Returns the Android Context that should be used to open the route
-         */
-        public Context getContext() { return _context; }
-    }
+		/**
+		 * Returns the Android Context that should be used to open the route
+		 */
+		public Context getContext() { return _context; }
+	}
 
 	/**
-     * The class used to determine behavior when opening a URL.
-     * If you want to extend Routable to handle things like transition
-     * animations or fragments, this class should be augmented.
-     */
+	 * The class used to determine behavior when opening a URL.
+	 * If you want to extend Routable to handle things like transition
+	 * animations or fragments, this class should be augmented.
+	 */
 	public static class RouterOptions {
 		Class<? extends Activity> _klass;
 		RouterCallback _callback;
@@ -144,7 +145,7 @@ public class Router {
 
 	private static class RouterParams {
 		public RouterOptions routerOptions;
-		public Map<String, String> openParams;
+		public Map<String, TypedKey> openParams;
 	}
 
 	private final Map<String, RouterOptions> _routes = new HashMap<String, RouterOptions>();
@@ -153,23 +154,28 @@ public class Router {
 	private Context _context;
 
 	/**
-     * Creates a new Router
-     */
+	 * Creates a new Router
+	 */
 	public Router() {
 
 	}
 
 	/**
-     * Creates a new Router
-     * @param context {@link Context} that all {@link Intent}s generated by the router will use
-     */
+	 * Creates a new Router
+	 * @param context {@link Context} that all {@link Intent}s generated by the router will use
+	 */
 	public Router(Context context) {
 		this.setContext(context);
 	}
 
 	/**
-     * @param context {@link Context} that all {@link Intent}s generated by the router will use
-     */
+	 * @param context {@link Context} that all {@link Intent}s generated by the router will use
+	 * @deprecated A global context is ERROR-PRONE design, which will easily leak your memory. Even
+	 * the worse, the Application-Context in official document is a bad usage! For more detail,
+	 * see: <a href="http://diordna.sinaapp.com/?p=522">Context, What Context?</a>
+	 * @see com.usepropeller.routable.Router#open(String, Context)
+	 * @see com.usepropeller.routable.Router#open(String, Bundle, Context)
+	 */
 	public void setContext(Context context) {
 		this._context = context;
 	}
@@ -182,10 +188,10 @@ public class Router {
 	}
 
 	/**
-     * Map a URL to a callback
-     * @param format The URL being mapped; for example, "users/:id" or "groups/:id/topics/:topic_id"
-     * @param callback {@link RouterCallback} instance which contains the code to execute when the URL is opened
-     */
+	 * Map a URL to a callback
+	 * @param format The URL being mapped; for example, "users/:id" or "groups/:id/topics/:topic_id"
+	 * @param callback {@link RouterCallback} instance which contains the code to execute when the URL is opened
+	 */
 	public void map(String format, RouterCallback callback) {
 		RouterOptions options = new RouterOptions();
 		options.setCallback(callback);
@@ -193,20 +199,20 @@ public class Router {
 	}
 
 	/**
-     * Map a URL to open an {@link Activity}
-     * @param format The URL being mapped; for example, "users/:id" or "groups/:id/topics/:topic_id"
-     * @param klass The {@link Activity} class to be opened with the URL
-     */
+	 * Map a URL to open an {@link Activity}
+	 * @param format The URL being mapped; for example, "users/:id" or "groups/:id/topics/:topic_id"
+	 * @param klass The {@link Activity} class to be opened with the URL
+	 */
 	public void map(String format, Class<? extends Activity> klass) {
 		this.map(format, klass, null);
 	}
 
 	/**
-     * Map a URL to open an {@link Activity}
-     * @param format The URL being mapped; for example, "users/:id" or "groups/:id/topics/:topic_id"
-     * @param klass The {@link Activity} class to be opened with the URL
-     * @param options The {@link RouterOptions} to be used for more granular and customized options for when the URL is opened
-     */
+	 * Map a URL to open an {@link Activity}
+	 * @param format The URL being mapped; for example, "users/:id" or "groups/:id/topics/:topic_id"
+	 * @param klass The {@link Activity} class to be opened with the URL
+	 * @param options The {@link RouterOptions} to be used for more granular and customized options for when the URL is opened
+	 */
 	public void map(String format, Class<? extends Activity> klass, RouterOptions options) {
 		if (options == null) {
 			options = new RouterOptions();
@@ -231,37 +237,43 @@ public class Router {
 	}
 
 	/**
-     * Open a URL using the operating system's configuration (such as opening a link to Chrome or a video to YouTube)
-     * @param url The URL; for example, "http://www.youtube.com/watch?v=oHg5SJYRHA0"
-     */
+	 * Open a URL using the operating system's configuration (such as opening a link to Chrome or a video to YouTube)
+	 * @param url The URL; for example, "http://www.youtube.com/watch?v=oHg5SJYRHA0"
+	 * @deprecated You'd better use {@link com.usepropeller.routable.Router#openExternal(String, Bundle, Context)} or
+	 * {@link com.usepropeller.routable.Router#openExternal(String, Context)} instead.
+	 * @see com.usepropeller.routable.Router#setContext(Context)
+	 */
 	public void openExternal(String url) {
 		this.openExternal(url, this._context);
 	}
 
 	/**
-     * Open a URL using the operating system's configuration (such as opening a link to Chrome or a video to YouTube)
-     * @param url The URL; for example, "http://www.youtube.com/watch?v=oHg5SJYRHA0"
-     * @param context The context which is used in the generated {@link Intent}
-     */
+	 * Open a URL using the operating system's configuration (such as opening a link to Chrome or a video to YouTube)
+	 * @param url The URL; for example, "http://www.youtube.com/watch?v=oHg5SJYRHA0"
+	 * @param context The context which is used in the generated {@link Intent}
+	 */
 	public void openExternal(String url, Context context) {
 		this.openExternal(url, null, context);
 	}
 
 	/**
-     * Open a URL using the operating system's configuration (such as opening a link to Chrome or a video to YouTube)
-     * @param url The URL; for example, "http://www.youtube.com/watch?v=oHg5SJYRHA0"
-     * @param extras The {@link Bundle} which contains the extras to be assigned to the generated {@link Intent}
-     */
+	 * Open a URL using the operating system's configuration (such as opening a link to Chrome or a video to YouTube)
+	 * @param url The URL; for example, "http://www.youtube.com/watch?v=oHg5SJYRHA0"
+	 * @param extras The {@link Bundle} which contains the extras to be assigned to the generated {@link Intent}
+	 * @deprecated You'd better use {@link com.usepropeller.routable.Router#openExternal(String, Bundle, Context)} or
+	 * {@link com.usepropeller.routable.Router#openExternal(String, Context)} instead.
+	 * @see com.usepropeller.routable.Router#setContext(Context)
+	 */
 	public void openExternal(String url, Bundle extras) {
 		this.openExternal(url, extras, this._context);
 	}
 
 	/**
-     * Open a URL using the operating system's configuration (such as opening a link to Chrome or a video to YouTube)
-     * @param url The URL; for example, "http://www.youtube.com/watch?v=oHg5SJYRHA0"
-     * @param extras The {@link Bundle} which contains the extras to be assigned to the generated {@link Intent}
-     * @param context The context which is used in the generated {@link Intent}
-     */
+	 * Open a URL using the operating system's configuration (such as opening a link to Chrome or a video to YouTube)
+	 * @param url The URL; for example, "http://www.youtube.com/watch?v=oHg5SJYRHA0"
+	 * @param extras The {@link Bundle} which contains the extras to be assigned to the generated {@link Intent}
+	 * @param context The context which is used in the generated {@link Intent}
+	 */
 	public void openExternal(String url, Bundle extras, Context context) {
 		if (context == null) {
 			throw new ContextNotProvided(
@@ -277,37 +289,43 @@ public class Router {
 	}
 
 	/**
-     * Open a map'd URL set using {@link #map(String, Class)} or {@link #map(String, RouterCallback)}
-     * @param url The URL; for example, "users/16" or "groups/5/topics/20"
-     */
+	 * Open a map'd URL set using {@link #map(String, Class)} or {@link #map(String, RouterCallback)}
+	 * @param url The URL; for example, "users/16" or "groups/5/topics/20"
+	 * @deprecated You'd better use {@link com.usepropeller.routable.Router#open(String, Bundle, Context)} or
+	 * {@link com.usepropeller.routable.Router#open(String, Context)} instead.
+	 * @see com.usepropeller.routable.Router#setContext(Context)
+	 */
 	public void open(String url) {
 		this.open(url, this._context);
 	}
 
 	/**
-     * Open a map'd URL set using {@link #map(String, Class)} or {@link #map(String, RouterCallback)}
-     * @param url The URL; for example, "users/16" or "groups/5/topics/20"
-     * @param extras The {@link Bundle} which contains the extras to be assigned to the generated {@link Intent}
-     */
+	 * Open a map'd URL set using {@link #map(String, Class)} or {@link #map(String, RouterCallback)}
+	 * @param url The URL; for example, "users/16" or "groups/5/topics/20"
+	 * @param extras The {@link Bundle} which contains the extras to be assigned to the generated {@link Intent}
+	 * @deprecated You'd better use {@link com.usepropeller.routable.Router#open(String, Bundle, Context)} or
+	 * {@link com.usepropeller.routable.Router#open(String, Context)} instead.
+	 * @see com.usepropeller.routable.Router#setContext(Context)
+	 */
 	public void open(String url, Bundle extras) {
 		this.open(url, extras, this._context);
 	}
 
 	/**
-     * Open a map'd URL set using {@link #map(String, Class)} or {@link #map(String, RouterCallback)}
-     * @param url The URL; for example, "users/16" or "groups/5/topics/20"
-     * @param context The context which is used in the generated {@link Intent}
-     */
+	 * Open a map'd URL set using {@link #map(String, Class)} or {@link #map(String, RouterCallback)}
+	 * @param url The URL; for example, "users/16" or "groups/5/topics/20"
+	 * @param context The context which is used in the generated {@link Intent}
+	 */
 	public void open(String url, Context context) {
 		this.open(url, null, context);
 	}
 
 	/**
-     * Open a map'd URL set using {@link #map(String, Class)} or {@link #map(String, RouterCallback)}
-     * @param url The URL; for example, "users/16" or "groups/5/topics/20"
-     * @param extras The {@link Bundle} which contains the extras to be assigned to the generated {@link Intent}
-     * @param context The context which is used in the generated {@link Intent}
-     */
+	 * Open a map'd URL set using {@link #map(String, Class)} or {@link #map(String, RouterCallback)}
+	 * @param url The URL; for example, "users/16" or "groups/5/topics/20"
+	 * @param extras The {@link Bundle} which contains the extras to be assigned to the generated {@link Intent}
+	 * @param context The context which is used in the generated {@link Intent}
+	 */
 	public void open(String url, Bundle extras, Context context) {
 		if (context == null) {
 			throw new ContextNotProvided(
@@ -317,7 +335,18 @@ public class Router {
 		RouterParams params = this.paramsForUrl(url);
 		RouterOptions options = params.routerOptions;
 		if (options.getCallback() != null) {
-            RouteContext routeContext = new RouteContext(params.openParams, extras, context);
+
+			Map<String, String> routeContextParam = new HashMap<String, String>();
+			for (Entry<String, TypedKey> entry : params.openParams.entrySet()) {
+				String key = entry.getKey();
+				TypedKey typedKey = entry.getValue();
+
+				// We can only handle String value in callback
+				if (typedKey.value instanceof String) {
+					routeContextParam.put(key, (String) typedKey.value);
+				}
+			}
+			RouteContext routeContext = new RouteContext(routeContextParam, extras, context);
 
 			options.getCallback().run(routeContext);
 			return;
@@ -335,8 +364,8 @@ public class Router {
 	}
 
 	/*
-	 * Allows Intents to be spawned regardless of what context they were opened with.
-	 */
+     * Allows Intents to be spawned regardless of what context they were opened with.
+     */
 	private void addFlagsToIntent(Intent intent, Context context) {
 		if (context == this._context) {
 			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -344,28 +373,53 @@ public class Router {
 	}
 
 	/**
-     * @param url The URL; for example, "users/16" or "groups/5/topics/20"
+	 * @param url The URL; for example, "users/16" or "groups/5/topics/20"
 	 * @return The {@link Intent} for the url
 	 */
 	public Intent intentFor(String url) {
 		RouterParams params = this.paramsForUrl(url);
 
-        return intentFor(params);
+		return intentFor(params);
 	}
 
-    private Intent intentFor(RouterParams params) {
-        RouterOptions options = params.routerOptions;
-        Intent intent = new Intent();
-        if (options.getDefaultParams() != null) {
-            for (Entry<String, String> entry : options.getDefaultParams().entrySet()) {
-                intent.putExtra(entry.getKey(), entry.getValue());
-            }
-        }
-        for (Entry<String, String> entry : params.openParams.entrySet()) {
-            intent.putExtra(entry.getKey(), entry.getValue());
-        }
-        return intent;
-    }
+	private Intent intentFor(RouterParams params) {
+		RouterOptions options = params.routerOptions;
+		Intent intent = new Intent();
+		if (options.getDefaultParams() != null) {
+			for (Entry<String, String> entry : options.getDefaultParams().entrySet()) {
+				intent.putExtra(entry.getKey(), entry.getValue());
+			}
+		}
+		for (Entry<String, TypedKey> entry : params.openParams.entrySet()) {
+			String key = entry.getKey();
+			TypedKey typedKey = entry.getValue();
+			String value = (String) typedKey.value;
+
+			switch (typedKey.type) {
+				case TypedKey.TYPE_INT:
+					intent.putExtra(key, (int) Integer.valueOf(value));
+					break;
+				case TypedKey.TYPE_LONG:
+					intent.putExtra(key, (long) Long.valueOf(value));
+					break;
+
+				case TypedKey.TYPE_FLOAT:
+					intent.putExtra(key, (float) Float.valueOf(value));
+					break;
+				case TypedKey.TYPE_DOUBLE:
+					intent.putExtra(key, (double) Double.valueOf(value));
+					break;
+
+				case TypedKey.TYPE_STRING:
+					intent.putExtra(key, value);
+					break;
+
+				default:
+					break;
+			}
+		}
+		return intent;
+	}
 
 	/**
 	 * @param url The URL to check
@@ -380,33 +434,33 @@ public class Router {
 	/**
 	 *
 	 * @param context The context which is spawning the intent
-     * @param url The URL; for example, "users/16" or "groups/5/topics/20"
+	 * @param url The URL; for example, "users/16" or "groups/5/topics/20"
 	 * @return The {@link Intent} for the url, with the correct {@link Activity} set, or null.
 	 */
 	public Intent intentFor(Context context, String url) {
 		RouterParams params = this.paramsForUrl(url);
 
-        return intentFor(context, params);
+		return intentFor(context, params);
 	}
 
-    private Intent intentFor(Context context, RouterParams params) {
-        RouterOptions options = params.routerOptions;
-        if (options.getCallback() != null) {
-            return null;
-        }
+	private Intent intentFor(Context context, RouterParams params) {
+		RouterOptions options = params.routerOptions;
+		if (options.getCallback() != null) {
+			return null;
+		}
 
-        Intent intent = intentFor(params);
-        intent.setClass(context, options.getOpenClass());
-        this.addFlagsToIntent(intent, context);
-        return intent;
-    }
+		Intent intent = intentFor(params);
+		intent.setClass(context, options.getOpenClass());
+		this.addFlagsToIntent(intent, context);
+		return intent;
+	}
 
 	/*
-	 * Takes a url (i.e. "/users/16/hello") and breaks it into a {@link RouterParams} instance where
-	 * each of the parameters (like ":id") has been parsed.
-	 */
+     * Takes a url (i.e. "/users/16/hello") and breaks it into a {@link RouterParams} instance where
+     * each of the parameters (like ":id") has been parsed.
+     */
 	private RouterParams paramsForUrl(String url) {
-        final String cleanedUrl = cleanUrl(url);
+		final String cleanedUrl = cleanUrl(url);
 
 		URI parsedUri = URI.create("http://tempuri.org/" + cleanedUrl);
 
@@ -428,7 +482,7 @@ public class Router {
 				continue;
 			}
 
-			Map<String, String> givenParams = urlToParamsMap(givenParts, routerParts);
+			Map<String, TypedKey> givenParams = urlToParamsMap(givenParts, routerParts);
 			if (givenParams == null) {
 				continue;
 			}
@@ -446,11 +500,39 @@ public class Router {
 		List<NameValuePair> query = URLEncodedUtils.parse(parsedUri, "utf-8");
 
 		for (NameValuePair pair : query) {
-			routerParams.openParams.put(pair.getName(), pair.getValue());
+			routerParams.openParams.put(pair.getName(), new TypedKey(pair.getValue()));
 		}
 
 		this._cachedRoutes.put(cleanedUrl, routerParams);
 		return routerParams;
+	}
+
+	/**
+	 * Bundle of key name and its type
+	 */
+	private static class TypedKey {
+
+		public static final char TYPE_INT = 'i';
+		public static final char TYPE_LONG = 'l';
+
+		public static final char TYPE_FLOAT = 'f';
+		public static final char TYPE_DOUBLE = 'd';
+
+		public static final char TYPE_STRING = 's';
+
+		char type;
+		Object value;
+
+		public TypedKey() {
+			this(TYPE_STRING, null);
+		}
+		public TypedKey(Object value) {
+			this(TYPE_STRING, value);
+		}
+		public TypedKey(char type, Object value) {
+			this.type = type;
+			this.value = value;
+		}
 	}
 
 	/**
@@ -459,15 +541,17 @@ public class Router {
 	 * @param routerUrlSegments An array representing a possible URL match for the router (i.e. ["users", ":id"])
 	 * @return A map of URL parameters if it's a match (i.e. {"id" => "42"}) or null if there is no match
 	 */
-	private Map<String, String> urlToParamsMap(String[] givenUrlSegments, String[] routerUrlSegments) {
-		Map<String, String> formatParams = new HashMap<String, String>();
+	private Map<String, TypedKey> urlToParamsMap(String[] givenUrlSegments, String[] routerUrlSegments) {
+		Map<String, TypedKey> formatParams = new HashMap<String, TypedKey>();
 		for (int index = 0; index < routerUrlSegments.length; index++) {
 			String routerPart = routerUrlSegments[index];
 			String givenPart = givenUrlSegments[index];
 
-			if (routerPart.charAt(0) == ':') {
-				String key = routerPart.substring(1, routerPart.length());
-				formatParams.put(key, givenPart);
+			String[] typeKey = routerPart.split(":");    // [0] -> type, [1] -> value
+			if (typeKey.length == 2) {
+				char type = TextUtils.isEmpty(typeKey[0]) ? TypedKey.TYPE_STRING : typeKey[0].charAt(0);
+				String key = typeKey[1];
+				formatParams.put(key, new TypedKey(type, givenPart));
 				continue;
 			}
 
@@ -479,17 +563,17 @@ public class Router {
 		return formatParams;
 	}
 
-    /**
-     * Clean up url
-     * @param url
-     * @return cleaned url
-     */
-    private String cleanUrl(String url) {
-        if (url.startsWith("/")) {
-            return url.substring(1, url.length());
-        }
-        return url;
-    }
+	/**
+	 * Clean up url
+	 * @param url
+	 * @return cleaned url
+	 */
+	private String cleanUrl(String url) {
+		if (url.startsWith("/")) {
+			return url.substring(1, url.length());
+		}
+		return url;
+	}
 
 	/**
 	 * Thrown if a given route is not found.
