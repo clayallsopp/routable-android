@@ -14,11 +14,17 @@ public class PropellerApplication extends Application {
     public void onCreate() {
         super.onCreate();
         
-        // Set the global context
-        Router.sharedRouter().setContext(getApplicationContext());
         // Symbol-esque params are passed as intent extras to the activities
         Router.sharedRouter().map("users/:id", UserActivity.class);
-        Router.sharedRouter().map("users/new/:name/:zip", NewUserActivity.class);
+
+        // Symbol-esque params are passed as intent extras to the activities
+        // And, we support typed parameter
+        // i -> Integer
+        // l -> Long
+        // f -> Float
+        // d -> Double
+        // s -> String
+        Router.sharedRouter().map("users/info/i:id/s:name", NewUserActivity.class);
     }
 }
 ```
@@ -45,10 +51,10 @@ public class NewUserActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         Bundle intentExtras = getIntent().getExtras();
-        // Corresponds to the ":name" above
+        // Corresponds to the "i:id" above
+        int id = intentExtras.get("id");
+        // Corresponds to the "s:name" above
         String name = intentExtras.get("name");
-        // Corresponds to the ":zip" above
-        String zip = intentExtras.get("zip");
     }
 }
 ```
@@ -57,9 +63,9 @@ public class NewUserActivity extends Activity {
 
 ```java
 // starts a new UserActivity
-Router.sharedRouter().open("users/16");
+Router.sharedRouter().open("users/16", activityContext);
 // starts a new NewUserActivity
-Router.sharedRouter().open("users/new/Clay/94303");
+Router.sharedRouter().open("users/new/7/walfud", activityContext);
 ```
 
 ## Installation
@@ -111,6 +117,11 @@ Clay Allsopp ([http://clayallsopp.com](http://clayallsopp.com))
 
 - [http://twitter.com/clayallsopp](http://twitter.com/clayallsopp)
 - [clay@usepropeller.com](clay@usepropeller.com)
+
+walfud
+
+- [http://diordna.sinaapp.com/](http://diordna.sinaapp.com/)
+- [walfud@aliyun.com](walfud@aliyun.com)
 
 ## License
 
